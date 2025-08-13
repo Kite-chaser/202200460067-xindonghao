@@ -4,7 +4,7 @@
 #include <cstring>
 #include <vector>
 
-// SM4³£Á¿¶¨Òå
+// SM4å¸¸é‡å®šä¹‰
 constexpr uint32_t SM4_BLOCK_SIZE = 16;
 constexpr uint32_t SM4_NUM_ROUNDS = 32;
 constexpr uint32_t FK[4] = {0xA3B1BAC6, 0x56AA3350, 0x677D9197, 0xB27022DC};
@@ -19,7 +19,7 @@ constexpr uint32_t CK[32] = {
     0x10171E25, 0x2C333A41, 0x484F565D, 0x646B7279
 };
 
-// SM4 SºĞ
+// SM4 Sç›’
 alignas(64) const uint8_t SM4_SBOX[256] = {
     0xD6, 0x90, 0xE9, 0xFE, 0xCC, 0xE1, 0x3D, 0xB7, 0x16, 0xB6, 0x14, 0xC2, 0x28, 0xFB, 0x2C, 0x05,
     0x2B, 0x67, 0x9A, 0x76, 0x2A, 0xBE, 0x04, 0xC3, 0xAA, 0x44, 0x13, 0x26, 0x49, 0x86, 0x06, 0x99,
@@ -39,11 +39,11 @@ alignas(64) const uint8_t SM4_SBOX[256] = {
     0x18, 0xF0, 0x7D, 0xEC, 0x3A, 0xDC, 0x4D, 0x20, 0x79, 0xEE, 0x5F, 0x3E, 0xD7, 0xCB, 0x39, 0x48
 };
 
-// T-tableÓÅ»¯ÊµÏÖ
+// T-tableä¼˜åŒ–å®ç°
 class SM4_TTable {
 public:
     SM4_TTable() {
-        // Ô¤¼ÆËãT±í
+        // é¢„è®¡ç®—Tè¡¨
         for (int i = 0; i < 256; i++) {
             uint32_t s = SM4_SBOX[i];
             uint32_t t = (s << 24) | (s << 16) | (s << 8) | s;
@@ -63,14 +63,14 @@ public:
             uint32_t x4 = x[0] ^ T0[t & 0xFF] ^ T1[(t >> 8) & 0xFF] ^ 
                          T2[(t >> 16) & 0xFF] ^ T3[t >> 24];
             
-            // ÒÆÎ»¼Ä´æÆ÷
+            // ç§»ä½å¯„å­˜å™¨
             x[0] = x[1];
             x[1] = x[2];
             x[2] = x[3];
             x[3] = x4;
         }
         
-        store_block(out, x[3], x[2], x[1], x[0]); // ·´ĞòÊä³ö
+        store_block(out, x[3], x[2], x[1], x[0]); // ååºè¾“å‡º
     }
 
 private:
@@ -101,7 +101,7 @@ private:
     }
 };
 
-// Ê¹ÓÃAES-NIÓÅ»¯µÄSM4ÊµÏÖ
+// ä½¿ç”¨AES-NIä¼˜åŒ–çš„SM4å®ç°
 class SM4_AESNI {
 public:
     void encrypt(uint8_t out[16], const uint8_t in[16], const uint32_t rk[SM4_NUM_ROUNDS]) {
@@ -109,21 +109,21 @@ public:
         __m128i tmp;
         
         for (int i = 0; i < SM4_NUM_ROUNDS; i++) {
-            // ÂÖÃÜÔ¿¼Ó
+            // è½®å¯†é’¥åŠ 
             tmp = _mm_xor_si128(state, _mm_set1_epi32(rk[i]));
             
-            // SºĞ±ä»»£¨Ê¹ÓÃAES-NI½üËÆ£©
+            // Sç›’å˜æ¢ï¼ˆä½¿ç”¨AES-NIè¿‘ä¼¼ï¼‰
             tmp = _mm_aesenc_si128(tmp, _mm_setzero_si128());
             
-            // ÏßĞÔ±ä»»
+            // çº¿æ€§å˜æ¢
             state = linear_transform(tmp);
             
-            // ÒÆÎ»¼Ä´æÆ÷
-            state = _mm_shuffle_epi32(state, 0x39); // Ñ­»·×óÒÆ32Î»
+            // ç§»ä½å¯„å­˜å™¨
+            state = _mm_shuffle_epi32(state, 0x39); // å¾ªç¯å·¦ç§»32ä½
         }
         
-        // ×îÖÕÖÃ»»
-        state = _mm_shuffle_epi32(state, 0x1B); // ·´Ğò
+        // æœ€ç»ˆç½®æ¢
+        state = _mm_shuffle_epi32(state, 0x1B); // ååº
         _mm_storeu_si128((__m128i*)out, state);
     }
 
@@ -141,7 +141,7 @@ private:
     }
 };
 
-// SM4ÃÜÔ¿À©Õ¹
+// SM4å¯†é’¥æ‰©å±•
 void sm4_key_schedule(uint32_t rk[SM4_NUM_ROUNDS], const uint8_t key[16]) {
     uint32_t k[4];
     k[0] = (key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3];
@@ -151,19 +151,19 @@ void sm4_key_schedule(uint32_t rk[SM4_NUM_ROUNDS], const uint8_t key[16]) {
     
     k[0] ^= FK[0]; k[1] ^= FK[1]; k[2] ^= FK[2]; k[3] ^= FK[3];
     
-    SM4_TTable sm4; // ¸´ÓÃT-tableÊµÏÖ
+    SM4_TTable sm4; // å¤ç”¨T-tableå®ç°
     uint8_t tmp[16];
     
     for (int i = 0; i < SM4_NUM_ROUNDS; i++) {
         uint32_t t = k[1] ^ k[2] ^ k[3] ^ CK[i];
         
-        // Ê¹ÓÃT-table¼ÆËãFº¯Êı
+        // ä½¿ç”¨T-tableè®¡ç®—Få‡½æ•°
         uint32_t x4 = k[0] ^ sm4.T0[t & 0xFF] ^ sm4.T1[(t >> 8) & 0xFF] ^ 
                      sm4.T2[(t >> 16) & 0xFF] ^ sm4.T3[t >> 24];
         
         rk[i] = x4;
         
-        // ¸üĞÂÃÜÔ¿×´Ì¬
+        // æ›´æ–°å¯†é’¥çŠ¶æ€
         k[0] = k[1];
         k[1] = k[2];
         k[2] = k[3];
@@ -171,17 +171,17 @@ void sm4_key_schedule(uint32_t rk[SM4_NUM_ROUNDS], const uint8_t key[16]) {
     }
 }
 
-// SM4-GCMÊµÏÖ
+// SM4-GCMå®ç°
 class SM4_GCM {
 public:
     SM4_GCM(const uint8_t key[16]) {
         sm4_key_schedule(enc_rk, key);
         
-        // ¼ÆËãH = SM4(0)
+        // è®¡ç®—H = SM4(0)
         uint8_t zero[16] = {0};
         SM4_TTable().encrypt(H, zero, enc_rk);
         
-        // Ô¤¼ÆËãHµÄÃİ´Î
+        // é¢„è®¡ç®—Hçš„å¹‚æ¬¡
         precompute_H_table();
     }
 
@@ -189,33 +189,33 @@ public:
                 const uint8_t* plaintext, size_t len,
                 const uint8_t* iv, size_t iv_len,
                 const uint8_t* aad, size_t aad_len) {
-        // ³õÊ¼»¯¼ÆÊıÆ÷
+        // åˆå§‹åŒ–è®¡æ•°å™¨
         uint8_t counter[16] = {0};
         init_counter(counter, iv, iv_len);
         
-        // ¼ÓÃÜÊı¾İ
+        // åŠ å¯†æ•°æ®
         ctr_mode(ciphertext, plaintext, len, counter);
         
-        // ¼ÆËãÈÏÖ¤±êÇ©
+        // è®¡ç®—è®¤è¯æ ‡ç­¾
         compute_tag(tag, ciphertext, len, aad, aad_len, counter);
     }
 
 private:
     uint32_t enc_rk[SM4_NUM_ROUNDS];
     __m128i H;
-    __m128i H_table[16][256]; // 4KBÔ¤¼ÆËã±í
+    __m128i H_table[16][256]; // 4KBé¢„è®¡ç®—è¡¨
     
     void precompute_H_table() {
-        // ÊµÏÖÂÔ£¬Êµ¼ÊÖĞÓ¦Ê¹ÓÃCLMULÖ¸ÁîÓÅ»¯
+        // å®ç°ç•¥ï¼Œå®é™…ä¸­åº”ä½¿ç”¨CLMULæŒ‡ä»¤ä¼˜åŒ–
     }
     
     void init_counter(uint8_t counter[16], const uint8_t* iv, size_t iv_len) {
-        // ¼ò»¯µÄ¼ÆÊıÆ÷³õÊ¼»¯
+        // ç®€åŒ–çš„è®¡æ•°å™¨åˆå§‹åŒ–
         if (iv_len == 12) {
             memcpy(counter, iv, 12);
             counter[15] = 1;
         } else {
-            // ¸ü¸´ÔÓµÄ´¦Àí
+            // æ›´å¤æ‚çš„å¤„ç†
             memcpy(counter, iv, std::min(iv_len, 16UL));
         }
     }
@@ -226,15 +226,15 @@ private:
         uint32_t block_count = 0;
         
         for (size_t i = 0; i < len; i += 16) {
-            // Éú³ÉÃÜÔ¿Á÷
+            // ç”Ÿæˆå¯†é’¥æµ
             sm4.encrypt(keystream, counter, enc_rk);
             
-            // ¼ÆÊıÆ÷µİÔö
+            // è®¡æ•°å™¨é€’å¢
             for (int j = 15; j >= 0; j--) {
                 if (++counter[j] != 0) break;
             }
             
-            // Òì»ò¼ÓÃÜ
+            // å¼‚æˆ–åŠ å¯†
             size_t block_size = std::min<size_t>(16, len - i);
             for (size_t j = 0; j < block_size; j++) {
                 out[i + j] = in[i + j] ^ keystream[j];
@@ -244,61 +244,61 @@ private:
     
     void compute_tag(uint8_t tag[16], const uint8_t* ciphertext, size_t ciphertext_len,
                     const uint8_t* aad, size_t aad_len, const uint8_t counter[16]) {
-        // GHASH¼ÆËã
+        // GHASHè®¡ç®—
         __m128i ghash = _mm_setzero_si128();
         
-        // ´¦ÀíAAD
+        // å¤„ç†AAD
         ghash_block(ghash, aad, aad_len);
         
-        // ´¦ÀíÃÜÎÄ
+        // å¤„ç†å¯†æ–‡
         ghash_block(ghash, ciphertext, ciphertext_len);
         
-        // ´¦Àí³¤¶È¿é
+        // å¤„ç†é•¿åº¦å—
         __m128i len_block = _mm_set_epi64x(
             (static_cast<uint64_t>(aad_len) * 8) << 64,
             (static_cast<uint64_t>(ciphertext_len) * 8)
         );
         ghash = _mm_xor_si128(ghash, len_block);
         
-        // ×îÖÕ¼ÓÃÜ
+        // æœ€ç»ˆåŠ å¯†
         uint8_t final_block[16];
         SM4_TTable().encrypt(final_block, counter, enc_rk);
         
-        // Éú³É±êÇ©
+        // ç”Ÿæˆæ ‡ç­¾
         for (int i = 0; i < 16; i++) {
             tag[i] = (reinterpret_cast<uint8_t*>(&ghash)[i] ^ final_block[i]);
         }
     }
     
     void ghash_block(__m128i& ghash, const uint8_t* data, size_t len) {
-        // ¼ò»¯µÄGHASHÊµÏÖ
+        // ç®€åŒ–çš„GHASHå®ç°
         for (size_t i = 0; i < len; i += 16) {
             __m128i block = _mm_loadu_si128((const __m128i*)(data + i));
             ghash = _mm_xor_si128(ghash, block);
-            // Êµ¼ÊÖĞÓ¦Ê¹ÓÃGF³Ë·¨
+            // å®é™…ä¸­åº”ä½¿ç”¨GFä¹˜æ³•
             // ghash = gf_mult(ghash, H);
         }
     }
     
-    // Êµ¼ÊÖĞÓ¦Ê¹ÓÃPCLMULQDQÖ¸ÁîÊµÏÖ
+    // å®é™…ä¸­åº”ä½¿ç”¨PCLMULQDQæŒ‡ä»¤å®ç°
     __m128i gf_mult(__m128i a, __m128i b) {
-        // ¼ò»¯µÄÕ¼Î»ÊµÏÖ
+        // ç®€åŒ–çš„å ä½å®ç°
         return _mm_xor_si128(a, b);
     }
 };
 
-// ²âÊÔº¯Êı
+// æµ‹è¯•å‡½æ•°
 int main() {
-    // Ê¾ÀıÃÜÔ¿ºÍÃ÷ÎÄ
+    // ç¤ºä¾‹å¯†é’¥å’Œæ˜æ–‡
     uint8_t key[16] = {0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10};
     uint8_t plaintext[16] = {0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10};
     uint8_t ciphertext[16], decrypted[16];
     
-    // ÃÜÔ¿À©Õ¹
+    // å¯†é’¥æ‰©å±•
     uint32_t rk[SM4_NUM_ROUNDS];
     sm4_key_schedule(rk, key);
     
-    // T-table¼ÓÃÜ
+    // T-tableåŠ å¯†
     SM4_TTable sm4_ttable;
     sm4_ttable.encrypt(ciphertext, plaintext, rk);
     
@@ -306,7 +306,7 @@ int main() {
     for (int i = 0; i < 16; i++) printf("%02x ", ciphertext[i]);
     std::cout << "\n";
     
-    // AES-NI¼ÓÃÜ£¨ĞèÒªÖ§³ÖAES-NIµÄCPU£©
+    // AES-NIåŠ å¯†ï¼ˆéœ€è¦æ”¯æŒAES-NIçš„CPUï¼‰
     #ifdef __AES__
     SM4_AESNI sm4_aesni;
     sm4_aesni.encrypt(ciphertext, plaintext, rk);
@@ -316,11 +316,11 @@ int main() {
     std::cout << "\n";
     #endif
     
-    // SM4-GCM²âÊÔ
+    // SM4-GCMæµ‹è¯•
     uint8_t iv[12] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b};
     uint8_t aad[20] = {0x54,0x68,0x69,0x73,0x20,0x69,0x73,0x20,0x41,0x41,0x44};
     uint8_t tag[16];
-    uint8_t long_plaintext[64] = { /* 64×Ö½Ú²âÊÔÊı¾İ */ };
+    uint8_t long_plaintext[64] = { /* 64å­—èŠ‚æµ‹è¯•æ•°æ® */ };
     uint8_t long_ciphertext[64];
     
     SM4_GCM gcm(key);
