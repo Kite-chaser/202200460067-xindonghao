@@ -6,15 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-// SM3 ÉÏÏÂÎÄ½á¹¹Ìå
+// SM3 ä¸Šä¸‹æ–‡ç»“æ„ä½“
 typedef struct {
-    uint32_t state[8];       // Ñ¹Ëõº¯Êı×´Ì¬
-    uint64_t totalLength;    // ÏûÏ¢×Ü³¤¶È£¨±ÈÌØ£©
-    size_t bufferLength;     // µ±Ç°»º³åÇø³¤¶È£¨×Ö½Ú£©
-    uint8_t buffer[64];      // ÏûÏ¢»º³åÇø£¨64×Ö½Ú¿é£©
+    uint32_t state[8];       // å‹ç¼©å‡½æ•°çŠ¶æ€
+    uint64_t totalLength;    // æ¶ˆæ¯æ€»é•¿åº¦ï¼ˆæ¯”ç‰¹ï¼‰
+    size_t bufferLength;     // å½“å‰ç¼“å†²åŒºé•¿åº¦ï¼ˆå­—èŠ‚ï¼‰
+    uint8_t buffer[64];      // æ¶ˆæ¯ç¼“å†²åŒºï¼ˆ64å­—èŠ‚å—ï¼‰
 } SM3_CTX;
 
-// º¯ÊıÉùÃ÷
+// å‡½æ•°å£°æ˜
 void sm3_init(SM3_CTX *ctx);
 void sm3_update(SM3_CTX *ctx, const uint8_t *data, size_t length);
 void sm3_final(SM3_CTX *ctx, uint8_t digest[32]);
