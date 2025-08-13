@@ -1,24 +1,24 @@
 #include "sm3.h"
 #include <stdio.h>
 #include <string.h>
-// ³£Á¿¶¨Òå
+// å¸¸é‡å®šä¹‰
 #define SM3_T1 0x79cc4519
 #define SM3_T2 0x7a879d8a
 
-// Ñ­»·×óÒÆ
+// å¾ªç¯å·¦ç§»
 #define ROTL32(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
-// ²¼¶ûº¯Êı
+// å¸ƒå°”å‡½æ•°
 #define FF0(x, y, z) ((x) ^ (y) ^ (z))
 #define FF1(x, y, z) (((x) & (y)) | (x) & (z) | (y) & (z))
 #define GG0(x, y, z) ((x) ^ (y) ^ (z))
 #define GG1(x, y, z) (((x) & (y)) | (~(x) & (z)))
 
-// ÖÃ»»º¯Êı
+// ç½®æ¢å‡½æ•°
 #define P0(x) ((x) ^ ROTL32(x, 9) ^ ROTL32(x, 17))
 #define P1(x) ((x) ^ ROTL32(x, 15) ^ ROTL32(x, 23))
 
-// ³õÊ¼»¯º¯Êı
+// åˆå§‹åŒ–å‡½æ•°
 void sm3_init(SM3_CTX *ctx) {
     ctx->state[0] = 0x7380166F;
     ctx->state[1] = 0x4914B2B9;
@@ -32,14 +32,14 @@ void sm3_init(SM3_CTX *ctx) {
     ctx->bufferLength = 0;
 }
 
-// Ñ¹Ëõº¯Êı
+// å‹ç¼©å‡½æ•°
 static void sm3_compress(SM3_CTX *ctx, const uint8_t block[64]) {
     uint32_t W[68], W1[64];
     uint32_t A, B, C, D, E, F, G, H;
     uint32_t SS1, SS2, TT1, TT2;
     int i;
 
-    // ÏûÏ¢À©Õ¹
+    // æ¶ˆæ¯æ‰©å±•
     for (i = 0; i < 16; i++) {
         W[i] = (block[4*i] << 24) | (block[4*i+1] << 16) | 
                (block[4*i+2] << 8) | block[4*i+3];
@@ -54,7 +54,7 @@ static void sm3_compress(SM3_CTX *ctx, const uint8_t block[64]) {
         W1[i] = W[i] ^ W[i+4];
     }
 
-    // ³õÊ¼»¯¹¤×÷±äÁ¿
+    // åˆå§‹åŒ–å·¥ä½œå˜é‡
     A = ctx->state[0];
     B = ctx->state[1];
     C = ctx->state[2];
@@ -64,7 +64,7 @@ static void sm3_compress(SM3_CTX *ctx, const uint8_t block[64]) {
     G = ctx->state[6];
     H = ctx->state[7];
 
-    // 64ÂÖµü´ú
+    // 64è½®è¿­ä»£
     for (i = 0; i < 64; i++) {
         uint32_t T = (i < 16) ? SM3_T1 : SM3_T2;
         uint32_t FF, GG;
@@ -92,7 +92,7 @@ static void sm3_compress(SM3_CTX *ctx, const uint8_t block[64]) {
         E = P0(TT2);
     }
 
-    // ¸üĞÂ×´Ì¬
+    // æ›´æ–°çŠ¶æ€
     ctx->state[0] ^= A;
     ctx->state[1] ^= B;
     ctx->state[2] ^= C;
@@ -103,7 +103,7 @@ static void sm3_compress(SM3_CTX *ctx, const uint8_t block[64]) {
     ctx->state[7] ^= H;
 }
 
-// ¸üĞÂº¯Êı
+// æ›´æ–°å‡½æ•°
 void sm3_update(SM3_CTX *ctx, const uint8_t *data, size_t length) {
     ctx->totalLength += length * 8;
     
@@ -123,28 +123,28 @@ void sm3_update(SM3_CTX *ctx, const uint8_t *data, size_t length) {
     }
 }
 
-// Íê³Éº¯Êı
+// å®Œæˆå‡½æ•°
 void sm3_final(SM3_CTX *ctx, uint8_t digest[32]) {
     int i;
     
-    // Ìí¼ÓÌî³äÎ»
+    // æ·»åŠ å¡«å……ä½
     ctx->buffer[ctx->bufferLength++] = 0x80;
     
-    // Èç¹ûÊ£Óà¿Õ¼ä²»×ãÒÔ´æ·Å³¤¶ÈĞÅÏ¢£¬ÏÈÑ¹ËõÒ»¿é
+    // å¦‚æœå‰©ä½™ç©ºé—´ä¸è¶³ä»¥å­˜æ”¾é•¿åº¦ä¿¡æ¯ï¼Œå…ˆå‹ç¼©ä¸€å—
     if (ctx->bufferLength > 56) {
         memset(ctx->buffer + ctx->bufferLength, 0, 64 - ctx->bufferLength);
         sm3_compress(ctx, ctx->buffer);
         ctx->bufferLength = 0;
     }
     
-    // Ìî³äÊ£Óà¿Õ¼ä²¢Ìí¼Ó³¤¶ÈĞÅÏ¢
+    // å¡«å……å‰©ä½™ç©ºé—´å¹¶æ·»åŠ é•¿åº¦ä¿¡æ¯
     memset(ctx->buffer + ctx->bufferLength, 0, 56 - ctx->bufferLength);
     for (i = 0; i < 8; i++) {
         ctx->buffer[56 + i] = (ctx->totalLength >> (8 * (7 - i))) & 0xFF;
     }
     sm3_compress(ctx, ctx->buffer);
     
-    // Êä³ö½á¹û
+    // è¾“å‡ºç»“æœ
     for (i = 0; i < 8; i++) {
         digest[4*i] = (ctx->state[i] >> 24) & 0xFF;
         digest[4*i+1] = (ctx->state[i] >> 16) & 0xFF;
@@ -153,7 +153,7 @@ void sm3_final(SM3_CTX *ctx, uint8_t digest[32]) {
     }
 }
 
-// ±ã½İ¹şÏ£º¯Êı
+// ä¾¿æ·å“ˆå¸Œå‡½æ•°
 void sm3_hash(const uint8_t *data, size_t length, uint8_t digest[32]) {
     SM3_CTX ctx;
     sm3_init(&ctx);
@@ -161,7 +161,7 @@ void sm3_hash(const uint8_t *data, size_t length, uint8_t digest[32]) {
     sm3_final(&ctx, digest);
 }
 
-// T-table ÓÅ»¯°æ±¾
+// T-table ä¼˜åŒ–ç‰ˆæœ¬
 static const uint32_t T_table[64] = {
     0x79cc4519, 0xf3988a32, 0xe7311465, 0xce6228cb,
     0x9cc45197, 0x3988a32f, 0x7311465e, 0xe6228cbc,
@@ -181,14 +181,14 @@ static const uint32_t T_table[64] = {
     0x79d8a7a8, 0x1d957f4c, 0x3b2aed98, 0x664c5d30
 };
 
-// Ê¹ÓÃ T-table ÓÅ»¯µÄÑ¹Ëõº¯Êı
+// ä½¿ç”¨ T-table ä¼˜åŒ–çš„å‹ç¼©å‡½æ•°
 static void sm3_compress_optimized1(SM3_CTX *ctx, const uint8_t block[64]) {
     uint32_t W[68], W1[64];
     uint32_t A, B, C, D, E, F, G, H;
     uint32_t SS1, SS2, TT1, TT2;
     int i;
 
-    // ÏûÏ¢À©Õ¹
+    // æ¶ˆæ¯æ‰©å±•
     for (i = 0; i < 16; i++) {
         W[i] = (block[4*i] << 24) | (block[4*i+1] << 16) | 
                (block[4*i+2] << 8) | block[4*i+3];
@@ -212,9 +212,9 @@ static void sm3_compress_optimized1(SM3_CTX *ctx, const uint8_t block[64]) {
     G = ctx->state[6];
     H = ctx->state[7];
 
-    // 64ÂÖµü´ú£¬Ê¹ÓÃÔ¤¼ÆËãµÄ T_table
+    // 64è½®è¿­ä»£ï¼Œä½¿ç”¨é¢„è®¡ç®—çš„ T_table
     for (i = 0; i < 64; i++) {
-        uint32_t T = T_table[i];  // Ê¹ÓÃÔ¤¼ÆËãµÄ T Öµ
+        uint32_t T = T_table[i];  // ä½¿ç”¨é¢„è®¡ç®—çš„ T å€¼
         uint32_t FF, GG;
         
         SS1 = ROTL32(ROTL32(A, 12) + E + T, 7);
@@ -250,7 +250,7 @@ static void sm3_compress_optimized1(SM3_CTX *ctx, const uint8_t block[64]) {
     ctx->state[7] ^= H;
 }
 
-// Ê¹ÓÃ T-table ÓÅ»¯µÄ SM3 ÊµÏÖ
+// ä½¿ç”¨ T-table ä¼˜åŒ–çš„ SM3 å®ç°
 void sm3_hash_optimized1(const uint8_t *data, size_t length, uint8_t digest[32]) {
     SM3_CTX ctx;
     sm3_init(&ctx);
@@ -262,7 +262,7 @@ void sm3_hash_optimized1(const uint8_t *data, size_t length, uint8_t digest[32])
     
     if (ctx.bufferLength > 56) {
         memset(ctx.buffer + ctx.bufferLength, 0, 64 - ctx.bufferLength);
-        sm3_compress_optimized1(&ctx, ctx.buffer);  // ´«µİÖ¸Õë
+        sm3_compress_optimized1(&ctx, ctx.buffer);  // ä¼ é€’æŒ‡é’ˆ
         ctx.bufferLength = 0;
     }
     
@@ -270,7 +270,7 @@ void sm3_hash_optimized1(const uint8_t *data, size_t length, uint8_t digest[32])
     for (i = 0; i < 8; i++) {
         ctx.buffer[56 + i] = (ctx.totalLength >> (8 * (7 - i))) & 0xFF;
     }
-    sm3_compress_optimized1(&ctx, ctx.buffer);  // ´«µİÖ¸Õë
+    sm3_compress_optimized1(&ctx, ctx.buffer);  // ä¼ é€’æŒ‡é’ˆ
     
     for (i = 0; i < 8; i++) {
         digest[4*i] = (ctx.state[i] >> 24) & 0xFF;
@@ -280,32 +280,32 @@ void sm3_hash_optimized1(const uint8_t *data, size_t length, uint8_t digest[32])
     }
 }
 
-// AESNI ÓÅ»¯°æ±¾
+// AESNI ä¼˜åŒ–ç‰ˆæœ¬
 #ifdef __AES__
 void sm3_hash_aesni(const uint8_t *data, size_t length, uint8_t digest[32]) {
-    // ÀûÓÃ AESNI Ö¸Áî¼¯½øĞĞ²¢ĞĞ¼ÆËã
+    // åˆ©ç”¨ AESNI æŒ‡ä»¤é›†è¿›è¡Œå¹¶è¡Œè®¡ç®—
     sm3_hash_optimized1(data, length, digest);
 }
 #endif
 
 int main() {
-    // ²âÊÔÊı¾İ
+    // æµ‹è¯•æ•°æ®
     const char *test_data = "abc";
     uint8_t digest[32];
     
-    // ¼ÆËã¹şÏ£
+    // è®¡ç®—å“ˆå¸Œ
     sm3_hash((const uint8_t*)test_data, strlen(test_data), digest);
     
-    // Êä³ö½á¹û
-    printf("SM3¹şÏ£½á¹û (\"%s\"): ", test_data);
+    // è¾“å‡ºç»“æœ
+    printf("SM3å“ˆå¸Œç»“æœ (\"%s\"): ", test_data);
     for (int i = 0; i < 32; i++) {
         printf("%02x", digest[i]);
     }
     printf("\n");
     
-    // Ô¤ÆÚ½á¹û£º66c7f0f462eeedd9d1f2d46bdc10e4e24167c4875cf2f7a2297da02b8f4ba8e0
+    // é¢„æœŸç»“æœï¼š66c7f0f462eeedd9d1f2d46bdc10e4e24167c4875cf2f7a2297da02b8f4ba8e0
     const char *expected = "66c7f0f462eeedd9d1f2d46bdc10e4e24167c4875cf2f7a2297da02b8f4ba8e0";
-    printf("Ô¤ÆÚ½á¹û: %s\n", expected);
+    printf("é¢„æœŸç»“æœ: %s\n", expected);
     
     return 0;
 }
