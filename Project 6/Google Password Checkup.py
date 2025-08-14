@@ -108,3 +108,4 @@ if __name__ == "__main__":
     test_password2 = "MySecurePassword123!"
     result2 = simulate_protocol(test_password2, leaked_passwords)
     print(f"密码 '{test_password2}' 是否泄露: {result2}")  # 应输出False
+
